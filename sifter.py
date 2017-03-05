@@ -88,18 +88,31 @@ for card in entrylist:
         'http://schoolido.lu/api/cards/{}/'.format(card[0])
     ).json()
     
+    idol['image'] = idol['card'+'_idolized'*card[1]+'_image']
+    
+    mu_bonus = 1.0
+    aq_bonus = 1.0
+    if idol['idol']['main_unit'][1:3] == "'s":
+        mu_bonus = 1.1
+    if idol['idol']['main_unit'] == "Aqours":
+        aq_bonus = 1.1
+        
     if card[1]: #idolized
         idol['rarity'] += 'i'
-        idol['image'] = idol['card_idolized_image']
-        for a in attr:
-            idol['maxstats_'+a] = idol['idolized_maximum_statistics_'+a]
-    else: #non-idolized
-        idol['image'] = idol['card_image']
-        for a in attr:
-            idol['maxstats_'+a] = idol['non_idolized_maximum_statistics_'+a]
+        
+    for a in attr:
+        idol['maxstats_'+a] = idol[
+            'non_'*(not card[1]) + 'idolized_maximum_statistics_' + a
+        ]  
+          
     idol['maxstats_' + idol['attribute'].lower()] += (
         kizunabonus[idol['rarity']]
     )
+    
+    for a in attr:
+        idol['maxstats_'+a+'_mu'] = int(idol['maxstats_'+a] * mu_bonus)
+        idol['maxstats_'+a+'_aq'] = int(idol['maxstats_'+a] * aq_bonus)
+
     #charm=score, trick=pl, yell=heal
     idol['skillgroup'] = ''
     if idol['skill'] != None:
@@ -114,8 +127,6 @@ for card in entrylist:
             idol['skillgroup'] = 'Score'
     
     idol['merits'] = ''
-    if idol['idol']['main_unit'][1:3] != "'s":
-        idol['merits'] += 'Unit/'
     
     cardlist += [idol]
     eprint('Got {}/{} card data'.format(
@@ -142,10 +153,15 @@ for a in attr:
         )[-9:]:
             idol['merits'] += sub+' '+a+'/'
 
-outfile.write('RARITY;COLLECTION;NAME;SUB;ATTR;'+
-    'SMILE;PURE;COOL;SKILL;MERITS;IMAGE\n')
+fields = ['RARITY','COLLECTION','NAME','SUB','ATTR',
+      'SMILE',  'PURE',  'COOL',
+    'M-SMILE','M-PURE','M-COOL',
+    'A-SMILE','A-PURE','A-COOL',
+    'SKILL','MERITS','IMAGE']
+
+outfile.write(';'.join(fields)+'\n')
 for idol in cardlist:
-    outfile.write('{};{};{};{};{};{};{};{};{};{};{}\n'.format(
+    outfile.write((('{};'*len(fields))[:-1]+'\n').format(
         idol['rarity'],
         idol['translated_collection'],
         idol['idol']['name'],
@@ -154,6 +170,12 @@ for idol in cardlist:
         idol['maxstats_smile'],
         idol['maxstats_pure'],
         idol['maxstats_cool'],
+        idol['maxstats_smile_mu'],
+        idol['maxstats_pure_mu'],
+        idol['maxstats_cool_mu'],
+        idol['maxstats_smile_aq'],
+        idol['maxstats_pure_aq'],
+        idol['maxstats_cool_aq'],
         idol['skillgroup'],
         idol['merits'][:-1],
         'http:' + idol['image'],
