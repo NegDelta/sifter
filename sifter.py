@@ -135,23 +135,17 @@ for card in entrylist:
     )
 
 for a in attr:
-    #general top9
-    for idol in sorted(cardlist, key=lambda d: d['maxstats_'+a])[-9:]:
-        idol['merits'] += 'Gen '+a+'/'
-    #sub-unit top9
-    for sub in musubs:
-        for idol in sorted(
-            [card for card in cardlist if card['idol']['sub_unit'] == sub], 
-            key=lambda i: i['maxstats_'+a]
-        )[-9:]:
-            idol['merits'] += sub+' '+a+'/'
-    #healer/pl top9
-    for sub in ['Healer','Perf Lock']:
-        for idol in sorted(
-            [card for card in cardlist if card['skillgroup'] == sub], 
-            key=lambda i: i['maxstats_'+a]
-        )[-9:]:
-            idol['merits'] += sub+' '+a+'/'
+    for u in ['_mu','_aq']:
+        #general top9
+        #for idol in sorted(cardlist, key=lambda d: d['maxstats_'+a+u])[-9:]:
+        #    idol['merits'] += 'Gen '+a+u+'/'
+        #healer/pl top9
+        for sub in ['Healer','Perf Lock','Score']:
+            for idol in sorted(
+                [card for card in cardlist if card['skillgroup'] == sub], 
+                key=lambda i: i['maxstats_'+a+u]
+            )[-9:]:
+                idol['merits'] += sub+' '+a+u+'/'
 
 fields = ['RARITY','COLLECTION','NAME','SUB','ATTR',
       'SMILE',  'PURE',  'COOL',
